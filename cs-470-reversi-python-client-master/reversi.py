@@ -112,3 +112,35 @@ class ReversiGameState:
                         valid_moves.append((row, col))
 
         return valid_moves
+
+############################## INSERTED CODE HERE, NOT PART OF ORIGINAL #####################################
+    def simulate_move(self, row, col):
+        # Create a new instance with the current state
+        new_state = ReversiGameState(np.copy(self.board), self.turn)
+
+        # Simulate the move by flipping pieces
+        new_state.make_move(row, col)
+
+        return new_state
+
+    def make_move(self, row, col):
+        # ... (existing code)
+
+        # Flip the captured pieces
+        for xdir in range(-1, 2):
+            for ydir in range(-1, 2):
+                if xdir == ydir == 0:
+                    continue
+                if self.capture_will_occur(row + ydir, col + xdir, xdir, ydir):
+                    self.flip_pieces(row, col, xdir, ydir)
+
+        # Place the current player's piece on the selected position
+        self.board[row, col] = self.turn
+
+    def flip_pieces(self, row, col, xdir, ydir):
+        # Flip the captured pieces
+        while self.space_is_on_board(row, col) and self.board[row, col] != self.turn:
+            self.board[row, col] = self.turn
+            row += ydir
+            col += xdir
+#############################################################################################################

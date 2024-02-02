@@ -27,5 +27,184 @@ class ReversiBot:
         '''
         valid_moves = state.get_valid_moves()
 
-        move = rand.choice(valid_moves) # Moves randomly...for now
-        return move
+        # move = rand.choice(valid_moves) # Moves randomly...for now
+        # return move
+        best_move = self.minimax(state, depth=3)
+        return best_move
+
+    def minimax(self, state, depth, maximizing_player=True):
+        if depth == 0 or state.is_game_over():
+            return self.evaluate(state)
+
+        valid_moves = state.get_valid_moves()
+
+        if maximizing_player:
+            best_score = float('-inf')
+            for move in valid_moves:
+                new_state = state.make_move(move) # TODO: we don't actually have a way of doing this right now
+                score = self.minimax(new_state, depth - 1, False)
+                best_score = max(best_score, score)
+            return best_score # TODO: is this actually returning the best score or the best move? Because what we want is the best move
+        else:
+            best_score = float('inf')
+            for move in valid_moves:
+                new_state = state.make_move(move)
+                score = self.minimax(new_state, depth - 1, True)
+                best_score = min(best_score, score)
+            return best_score
+
+
+    def evaluate(self, state):
+    # this function came from the github link on this website: https://kartikkukreja.wordpress.com/2013/03/30/heuristic-function-for-reversiothello/
+    # (converted from C++ to python)
+    # for now let's assume that me(the bot) is player 2 and opponent(human) is player 1
+        my_color = 2
+        opp_color = 1
+
+        my_tiles = 0
+        opp_tiles = 0
+
+        my_front_tiles = 0
+        opp_front_tiles = 0
+
+        X1 = [-1, -1, 0, 1, 1, 1, 0, -1]
+        Y1 = [0, 1, 1, 1, 0, -1, -1, -1]
+        V = [
+            [20, -3, 11, 8, 8, 11, -3, 20],
+            [-3, -7, -4, 1, 1, -4, -7, -3],
+            [11, -4, 2, 2, 2, 2, -4, 11],
+            [8, 1, 2, -3, -3, 2, 1, 8],
+            [8, 1, 2, -3, -3, 2, 1, 8],
+            [11, -4, 2, 2, 2, 2, -4, 11],
+            [-3, -7, -4, 1, 1, -4, -7, -3],
+            [20, -3, 11, 8, 8, 11, -3, 20]
+        ]
+
+        # Coin Parity
+        d = 0
+        for i in range(8):
+            for j in range(8):
+                if state.board[i][j] == my_color:
+                    d += V[i][j]
+                    my_tiles += 1
+                elif state.board[i][j] == opp_color:
+                    d -= V[i][j]
+                    opp_tiles += 1
+                if state.board[i][j] != 0:
+                    for k in range(8):
+                        x = i + X1[k]
+                        y = j + Y1[k]
+                        if 0 <= x < 8 and 0 <= y < 8 and state.board[x][y] == 0:
+                            if state.board[i][j] == my_color:
+                                my_front_tiles += 1
+                            else:
+                                opp_front_tiles += 1
+                            break
+
+        if my_tiles > opp_tiles:
+            p = (100.0 * my_tiles) / (my_tiles + opp_tiles)
+        elif my_tiles < opp_tiles:
+            p = -(100.0 * opp_tiles) / (my_tiles + opp_tiles)
+        else:
+            p = 0
+
+        if my_front_tiles > opp_front_tiles:
+            f = -(100.0 * my_front_tiles) / (my_front_tiles + opp_front_tiles)
+        elif my_front_tiles < opp_front_tiles:
+            f = (100.0 * opp_front_tiles) / (my_front_tiles + opp_front_tiles)
+        else:
+            f = 0
+
+        # Corner occupancy
+        my_tiles = opp_tiles = 0
+        if state.board[0][0] == my_color:
+            my_tiles += 1
+        elif state.board[0][0] == opp_color:
+            opp_tiles += 1
+        if state.board[0][7] == my_color:
+            my_tiles += 1
+        elif state.board[0][7] == opp_color:
+            opp_tiles += 1
+        if state.board[7][0] == my_color:
+            my_tiles += 1
+        elif state.board[7][0] == opp_color:
+            opp_tiles += 1
+        if state.board[7][7] == my_color:
+            my_tiles += 1
+        elif state.board[7][7] == opp_color:
+            opp_tiles += 1
+        c = 25 * (my_tiles - opp_tiles)
+
+        # Corner closeness
+        my_tiles = opp_tiles = 0
+        if state.board[0][0] == '-':
+            if state.board[0][1] == my_color:
+                my_tiles += 1
+            elif state.board[0][1] == opp_color:
+                opp_tiles += 1
+            if state.board[1][1] == my_color:
+                my_tiles += 1
+            elif state.board[1][1] == opp_color:
+                opp_tiles += 1
+            if state.board[1][0] == my_color:
+                my_tiles += 1
+            elif state.board[1][0] == opp_color:
+                opp_tiles += 1
+        if state.board[0][7] == '-':
+            if state.board[0][6] == my_color:
+                my_tiles += 1
+            elif state.board[0][6] == opp_color:
+                opp_tiles += 1
+            if state.board[1][6] == my_color:
+                my_tiles += 1
+            elif state.board[1][6] == opp_color:
+                opp_tiles += 1
+            if state.board[1][7] == my_color:
+                my_tiles += 1
+            elif state.board[1][7] == opp_color:
+                opp_tiles += 1
+        if state.board[7][0] == '-':
+            if state.board[7][1] == my_color:
+                my_tiles += 1
+            elif state.board[7][1] == opp_color:
+                opp_tiles += 1
+            if state.board[6][1] == my_color:
+                my_tiles += 1
+            elif state.board[6][1] == opp_color:
+                opp_tiles += 1
+            if state.board[6][0] == my_color:
+                my_tiles += 1
+            elif state.board[6][0] == opp_color:
+                opp_tiles += 1
+        if state.board[7][7] == '-':
+            if state.board[6][7] == my_color:
+                my_tiles += 1
+            elif state.board[6][7] == opp_color:
+                opp_tiles += 1
+            if state.board[6][6] == my_color:
+                my_tiles += 1
+            elif state.board[6][6] == opp_color:
+                opp_tiles += 1
+            if state.board[7][6] == my_color:
+                my_tiles += 1
+            elif state.board[7][6] == opp_color:
+                opp_tiles += 1
+        l = -12.5 * (my_tiles - opp_tiles)
+
+        # Mobility
+        # we currently don't have a way of calculating this for the opponent with the framework of this code
+        # my_tiles = num_valid_moves(my_color, opp_color, grid)
+        # opp_tiles = num_valid_moves(opp_color, my_color, grid)
+        # if my_tiles > opp_tiles:
+        #     m = (100.0 * my_tiles) / (my_tiles + opp_tiles)
+        # elif my_tiles < opp_tiles:
+        #     m = -(100.0 * opp_tiles) / (my_tiles + opp_tiles)
+        # else:
+        #     m = 0
+
+        # Final weighted score
+        # + (78.922 * m)
+        score = (10 * p) + (801.724 * c) + (382.026 * l) + (74.396 * f) + (10 * d)
+        return score
+
+
