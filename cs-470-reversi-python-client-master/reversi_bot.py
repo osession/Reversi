@@ -1,6 +1,7 @@
 import numpy as np
-import random as rand
+
 import reversi
+
 
 class ReversiBot:
     def __init__(self, move_num):
@@ -59,6 +60,41 @@ class ReversiBot:
                 if score < best_score:
                     best_score = score
                     best_move = move
+            return best_score, best_move
+
+    def alphaBeta(self, state, depth, alpha=float('-inf'), beta=float('inf'), maximizing_player=True):
+        if depth == 0 or len(state.get_valid_moves()) == 0:
+            return self.evaluate(state), None
+
+        valid_moves = state.get_valid_moves()
+
+        if maximizing_player:
+            best_score = float('-inf')
+            best_move = None
+            for move in valid_moves:
+                new_state = reversi.ReversiGameState(np.copy(state.board), state.turn)
+                new_state.simulate_move(move[0], move[1])
+                score, _ = self.alphaBeta(new_state, depth - 1, alpha, beta, False)
+                if score > best_score:
+                    best_score = score
+                    best_move = move
+                alpha = max(alpha, score)
+                if beta <= alpha:
+                    break
+            return best_score, best_move
+        else:
+            best_score = float('inf')
+            best_move = None
+            for move in valid_moves:
+                new_state = reversi.ReversiGameState(np.copy(state.board), state.turn)
+                new_state.simulate_move(move[0], move[1])
+                score, _ = self.alphaBeta(new_state, depth - 1, alpha, beta, True)
+                if score < best_score:
+                    best_score = score
+                    best_move = move
+                beta = min(beta, score)
+                if alpha <= beta:
+                    break
             return best_score, best_move
 
     def evaluate(self, state):
