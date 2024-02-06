@@ -25,34 +25,41 @@ class ReversiBot:
 
         Move should be a tuple (row, col) of the move you want the bot to make.
         '''
-        valid_moves = state.get_valid_moves()
+        # valid_moves = state.get_valid_moves()
 
         # move = rand.choice(valid_moves) # Moves randomly...for now
         # return move
-        best_move = self.minimax(state, depth=3)
+        best_score, best_move = self.minimax(state, depth=3)
         return best_move
 
     def minimax(self, state, depth, maximizing_player=True):
-        if depth == 0 or state.is_game_over():
-            return self.evaluate(state)
+        if depth == 0 or len(state.get_valid_moves()) == 0:
+            return self.evaluate(state), None
 
         valid_moves = state.get_valid_moves()
 
         if maximizing_player:
             best_score = float('-inf')
+            best_move = None
             for move in valid_moves:
-                new_state = state.make_move(move) # TODO: we don't actually have a way of doing this right now
-                score = self.minimax(new_state, depth - 1, False)
-                best_score = max(best_score, score)
-            return best_score # TODO: is this actually returning the best score or the best move? Because what we want is the best move
+                new_state = reversi.ReversiGameState(np.copy(state.board), state.turn)
+                new_state.simulate_move(move[0], move[1])
+                score, _ = self.minimax(new_state, depth - 1, False)
+                if score > best_score:
+                    best_score = score
+                    best_move = move
+            return best_score, best_move
         else:
             best_score = float('inf')
+            best_move = None
             for move in valid_moves:
-                new_state = state.make_move(move)
-                score = self.minimax(new_state, depth - 1, True)
-                best_score = min(best_score, score)
-            return best_score
-
+                new_state = reversi.ReversiGameState(np.copy(state.board), state.turn)
+                new_state.simulate_move(move[0], move[1])
+                score, _ = self.minimax(new_state, depth - 1, True)
+                if score < best_score:
+                    best_score = score
+                    best_move = move
+            return best_score, best_move
 
     def evaluate(self, state):
     # this function came from the github link on this website: https://kartikkukreja.wordpress.com/2013/03/30/heuristic-function-for-reversiothello/
@@ -206,5 +213,4 @@ class ReversiBot:
         # + (78.922 * m)
         score = (10 * p) + (801.724 * c) + (382.026 * l) + (74.396 * f) + (10 * d)
         return score
-
 

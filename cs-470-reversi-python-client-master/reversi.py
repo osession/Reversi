@@ -113,34 +113,64 @@ class ReversiGameState:
 
         return valid_moves
 
-############################## INSERTED CODE HERE, NOT PART OF ORIGINAL #####################################
+
+#####################Downloaded from Learning Suite to simulate how the state would change if you made a move ###################
     def simulate_move(self, row, col):
-        # Create a new instance with the current state
-        new_state = ReversiGameState(np.copy(self.board), self.turn)
-
-        # Simulate the move by flipping pieces
-        new_state.make_move(row, col)
-
-        return new_state
-
-    def make_move(self, row, col):
-        # ... (existing code)
-
-        # Flip the captured pieces
-        for xdir in range(-1, 2):
-            for ydir in range(-1, 2):
-                if xdir == ydir == 0:
+        for incx in range(-1, 2):
+            for incy in range(-1, 2):
+                if incx == 0 and incy == 0:
                     continue
-                if self.capture_will_occur(row + ydir, col + xdir, xdir, ydir):
-                    self.flip_pieces(row, col, xdir, ydir)
+                self.check_direction(row, col, incx, incy)
 
-        # Place the current player's piece on the selected position
-        self.board[row, col] = self.turn
+    def check_direction(self, row, col, incx, incy):
+        sequence = np.zeros(7, dtype=object)
+        seqLen = 0
 
-    def flip_pieces(self, row, col, xdir, ydir):
-        # Flip the captured pieces
-        while self.space_is_on_board(row, col) and self.board[row, col] != self.turn:
-            self.board[row, col] = self.turn
-            row += ydir
-            col += xdir
-#############################################################################################################
+        for i in range(1, 8):
+            r = row + incy * i
+            c = col + incx * i
+            if r < 0 or r > 7 or c < 0 or c > 7:
+                break
+            sequence[seqLen] = self.board[r][c]
+            seqLen += 1
+
+        count = 0
+
+        for i in range(0, seqLen):
+            if self.turn == 0:
+                if sequence[i] == 2:
+                    count += 1
+                else:
+                    if sequence[i] == 1 and count > 0:
+                        count = 20
+                    break
+
+            else:
+                if sequence[i] == 1:
+                    count += 1
+                else:
+                    if sequence[i] == 2 and count > 0:
+                        count = 20
+                    break
+
+        if count > 10:
+            if self.turn == 0:
+                i = 1
+                r = row + incy * i
+                c = col + incx * i
+                while self.board[r][c] == 2:
+                    self.board[r][c] = 1
+                    i += 1
+                    r = row + incy * i
+                    c = col + incx * i
+            else:
+                i = 1
+                r = row + incy * i
+                c = col + incx * i
+                while self.board[r][c] == 1:
+                    self.board[r][c] = 2
+                    i += 1
+                    r = row + incy * i
+                    c = col + incx * i
+        # change the actual piece that is being turned for this move
+        self.board[row][col] = self.turn
