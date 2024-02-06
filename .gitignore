@@ -1,0 +1,8 @@
+# ignore compiled classes
+.class
+
+# ignore log files
+GameLog.txt
+
+# ignore this random file
+misc.xml
