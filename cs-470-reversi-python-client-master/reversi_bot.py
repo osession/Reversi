@@ -29,7 +29,7 @@ class ReversiBot:
 
         # move = rand.choice(valid_moves) # Moves randomly...for now
         # return move
-        best_score, best_move = self.minimax(state, depth=3)
+        best_score, best_move = self.minimax(state, depth=5)
         return best_move
 
     def minimax(self, state, depth, maximizing_player=True):
