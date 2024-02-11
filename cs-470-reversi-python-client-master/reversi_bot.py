@@ -182,7 +182,7 @@ class ReversiBot:
             opp_tiles += 1
         c = 25 * (my_tiles - opp_tiles)
 
-        Corner closeness
+        # Corner closeness
         my_tiles = opp_tiles = 0
         if state.board[0][0] == '-':
             if state.board[0][1] == my_color:
