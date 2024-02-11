@@ -1,6 +1,7 @@
 import numpy as np
 
 import reversi
+import time
 
 
 class ReversiBot:
@@ -30,7 +31,10 @@ class ReversiBot:
 
         # move = rand.choice(valid_moves) # Moves randomly...for now
         # return move
-        best_score, best_move = self.minimax(state, depth=5)
+        start_time = time.time()
+        best_score, best_move = self.alphaBeta(state, depth=3)
+        end_time = time.time()
+        print(f'time to play: {end_time - start_time}')
         return best_move
 
     def minimax(self, state, depth, maximizing_player=True):
@@ -178,7 +182,7 @@ class ReversiBot:
             opp_tiles += 1
         c = 25 * (my_tiles - opp_tiles)
 
-        # Corner closeness
+        Corner closeness
         my_tiles = opp_tiles = 0
         if state.board[0][0] == '-':
             if state.board[0][1] == my_color:
@@ -234,19 +238,6 @@ class ReversiBot:
                 opp_tiles += 1
         l = -12.5 * (my_tiles - opp_tiles)
 
-        # Mobility
-        # we currently don't have a way of calculating this for the opponent with the framework of this code
-        # my_tiles = num_valid_moves(my_color, opp_color, grid)
-        # opp_tiles = num_valid_moves(opp_color, my_color, grid)
-        # if my_tiles > opp_tiles:
-        #     m = (100.0 * my_tiles) / (my_tiles + opp_tiles)
-        # elif my_tiles < opp_tiles:
-        #     m = -(100.0 * opp_tiles) / (my_tiles + opp_tiles)
-        # else:
-        #     m = 0
-
         # Final weighted score
-        # + (78.922 * m)
         score = (10 * p) + (801.724 * c) + (382.026 * l) + (74.396 * f) + (10 * d)
         return score
-
